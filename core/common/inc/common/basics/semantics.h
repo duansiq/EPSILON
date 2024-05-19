@@ -240,6 +240,7 @@ struct SemanticBehavior {
  * @brief Vehicle with semantic info
  */
 struct SemanticVehicle {
+  //周围障碍物这里定义为语义车辆，结构体包含车辆模型，导航信息，轨迹预测，以及横向动作
   // * vehicle
   Vehicle vehicle;
 

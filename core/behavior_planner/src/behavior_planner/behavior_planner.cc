@@ -34,7 +34,7 @@ ErrorType BehaviorPlanner::RunMpdm() {
   }
   return kSuccess;
 }
-
+//entrance:RunRoutePlanner
 ErrorType BehaviorPlanner::RunRoutePlanner(const int nearest_lane_id) {
   TicToc timer_rp;
   // ~ Run route planner
@@ -75,7 +75,7 @@ ErrorType BehaviorPlanner::RunOnce() {
   ego_id_ = ego_vehicle.id();
 
   if (use_sim_state_) {
-    RunRoutePlanner(ego_lane_id_by_pos);
+    RunRoutePlanner(ego_lane_id_by_pos);//这是什么意思，这不是循环了么?
   }
 
   if (ego_lane_id_ == kInvalidAgentId) {
@@ -83,6 +83,8 @@ ErrorType BehaviorPlanner::RunOnce() {
   }
 
   LateralBehavior behavior_by_lane_id;
+  //ego_lane_id是自车期望到达的lane，ego_lane_id_by_pos是根据自车定位得到当前所在的lane
+  //JudgeBehaviorByLaneId函数利用以上两个信息计算当前动作lcl、lcr、lk，存入behavior_by_lane_id
   if (JudgeBehaviorByLaneId(ego_lane_id_by_pos, &behavior_by_lane_id) !=
       kSuccess) {
     printf("[RunOnce]fail to judge behavior by lane id!\n");
@@ -107,7 +109,10 @@ ErrorType BehaviorPlanner::RunOnce() {
   if (autonomous_level_ >= 3) {
     TicToc timer;
     planning::MultiModalForward::ParamLookUp(aggressive_level_, &sim_param_);
+    //根据设置的激进程度aggressive_level_，调整idm前向推演的公式参数,aggressive_level_共5等级默认3
     if (RunMpdm() != kSuccess) {
+      //eudm是在mpdm的基础上允许根据dcp树在规划范围内改变自车的策略（适合长期决策），同时应用聚焦分支挑选风险场景（安全性）
+      //遵循mpdm的语义级闭环策略的思想，这里直接用mdpm的接口，同时mdpm包含在route planner中
       printf("[Summary]Mpdm failed: %lf ms.\n", timer.toc());
       // printf("[Stuck]Ego id %d on lane %d with behavior %d mpdm failed.\n",
       //        ego_vehicle.id(), ego_lane_id_,
@@ -131,6 +136,7 @@ ErrorType BehaviorPlanner::RunOnce() {
 ErrorType BehaviorPlanner::MultiBehaviorJudge(
     const decimal_t previous_desired_vel, LateralBehavior* mpdm_behavior,
     decimal_t* mpdm_desired_velocity) {
+  //最终输出的是最优行为和最优的期望速度
   // * get relevant information
   common::SemanticVehicleSet semantic_vehicle_set;
   if (map_itf_->GetKeySemanticVehicles(&semantic_vehicle_set) != kSuccess) {
@@ -182,11 +188,12 @@ ErrorType BehaviorPlanner::MultiBehaviorJudge(
 
   // * forward simulation
   std::vector<LateralBehavior> valid_behaviors;
-  vec_E<vec_E<common::Vehicle>> valid_forward_trajs;
-  vec_E<std::unordered_map<int, vec_E<common::Vehicle>>> valid_surround_trajs;
+  vec_E<vec_E<common::Vehicle>> valid_forward_trajs;//自车轨迹推演
+  vec_E<std::unordered_map<int, vec_E<common::Vehicle>>> valid_surround_trajs;//周围交互车辆的轨迹推演，放在一个集合里面
   int num_available_behaviors = static_cast<int>(potential_behaviors.size());
 
   // TicToc timer;
+  //每一个决策状态下都会推演一个自车的轨迹,推演周围多个交互车辆轨迹
   for (int i = 0; i < num_available_behaviors; i++) {
     vec_E<common::Vehicle> traj;
     std::unordered_map<int, vec_E<common::Vehicle>> sur_trajs;
@@ -219,6 +226,7 @@ ErrorType BehaviorPlanner::MultiBehaviorJudge(
   decimal_t winner_score, winner_desired_vel;
   LateralBehavior winner_behavior;
   vec_E<common::Vehicle> winner_forward_traj;
+  //对推演的轨迹进行评价得到最优的行为、推演轨迹、分数和期望速度
   if (EvaluateMultiPolicyTrajs(valid_behaviors, valid_forward_trajs,
                                valid_surround_trajs, &winner_behavior,
                                &winner_forward_traj, &winner_score,
@@ -342,12 +350,13 @@ ErrorType BehaviorPlanner::SimulateEgoBehavior(
   semantic_vehicle_set_tmp.semantic_vehicles.insert(
       std::make_pair(ego_vehicle.id(), ego_semantic_vehicle));
 
-  // ~ multi-agent forward
+  // ~ multi-agent forward 多智能体前向推演
   printf("[MPDM]simulating behavior %d.\n", static_cast<int>(ego_behavior));
   if (MultiAgentSimForward(ego_vehicle.id(), semantic_vehicle_set_tmp, traj,
                            surround_trajs) != kSuccess) {
     printf("[MPDM]multi agent forward under %d failed.\n",
            static_cast<int>(ego_behavior));
+    //开环前向仿真判断是否碰撞
     if (OpenloopSimForward(ego_semantic_vehicle, semantic_vehicle_set, traj,
                            surround_trajs) != kSuccess) {
       printf("[MPDM]open loop forward under %d failed.\n",
@@ -375,6 +384,7 @@ ErrorType BehaviorPlanner::EvaluateMultiPolicyTrajs(
   LateralBehavior behavior = common::LateralBehavior::kUndefined;
   decimal_t min_score = kInf;
   decimal_t des_vel = 0.0;
+  //每一个行为衍生出的自车和交互车辆的轨迹推演放一起进行评测
   for (int i = 0; i < num_valid_behaviors; i++) {
     decimal_t score, vel;
     EvaluateSinglePolicyTraj(valid_behaviors[i], valid_forward_trajs[i],
@@ -493,6 +503,7 @@ ErrorType BehaviorPlanner::EvaluateSinglePolicyTraj(
   if (behavior != common::LateralBehavior::kLaneKeeping) {
     cost_action += 0.5;
   }
+  //cost分为动作，安全，效率
   *score = cost_action + cost_safety + cost_efficiency;
   printf(
       "[CostDebug]behaivor %d: (action %lf, safety %lf, efficiency ego %lf, "
@@ -579,6 +590,7 @@ ErrorType BehaviorPlanner::MultiAgentSimForward(
           return kWrongStatus;
         }
       }
+      //前向推演一次,推演方式详见onlane_forward_simulation.h
       if (planning::OnLaneForwardSimulation::PropagateOnce(
               common::StateTransformer(v.second.lane), v.second.vehicle,
               leading_vehicle, sim_resolution_, sim_param_,
@@ -761,6 +773,7 @@ ErrorType BehaviorPlanner::JudgeBehaviorByLaneId(
 
 ErrorType BehaviorPlanner::UpdateEgoBehavior(
     const LateralBehavior& behavior_by_lane_id) {
+    //这里的状态机逻辑没看懂后续好好梳理一下
   if (behavior_.lat_behavior == common::LateralBehavior::kLaneKeeping) {
     if (behavior_by_lane_id == common::LateralBehavior::kLaneKeeping) {
       // ~ lane keeping

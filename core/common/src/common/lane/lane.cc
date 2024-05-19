@@ -119,6 +119,7 @@ ErrorType Lane::GetArcLengthByVecPosition(const Vecf<LaneDim>& vec_position,
   const decimal_t val_lb = position_spline_.begin();
   const decimal_t val_ub = position_spline_.end();
   decimal_t step = (val_ub - val_lb) * 0.5;
+  //position_spline_应该指的是目标车道参考线
 
   decimal_t s1 = val_lb;
   decimal_t s2 = val_lb + step;

@@ -324,7 +324,7 @@ class OnLaneForwardSimulation {
     decimal_t wheelbase_len = ego_vehicle.param().wheel_base();
     auto sim_param = param;
 
-    // * Step I: Calculate steering
+    // * Step I: Calculate steering 利用纯跟踪计算前轮转角steer
     bool steer_calculation_failed = false;
     common::FrenetState current_fs;
     if (stf.GetFrenetStateFromState(current_state, &current_fs) != kSuccess ||
@@ -353,7 +353,7 @@ class OnLaneForwardSimulation {
     }
     sim_param.idm_param.kDesiredVelocity = std::max(0.0, sim_vel);
 
-    // * Step II: Calculate velocity
+    // * Step II: Calculate velocity利用idm计算速度velocity，区分是否为领航车辆，这一步可以应用新的模型
     common::FrenetState leading_fs;
     if (leading_vehicle.id() == kInvalidAgentId ||
         stf.GetFrenetStateFromState(leading_vehicle.state(), &leading_fs) !=
@@ -375,7 +375,7 @@ class OnLaneForwardSimulation {
           leading_vehicle.state().velocity, dt, sim_param, &velocity);
     }
 
-    // * Step III: Get desired state using vehicle kinematic model
+    // * Step III: Get desired state using vehicle kinematic model 结合运动学模型计算下dt后的期望位置
     CalculateDesiredState(current_state, steer, velocity, wheelbase_len, dt,
                           sim_param, desired_state);
     return kSuccess;
@@ -498,6 +498,8 @@ class OnLaneForwardSimulation {
     // ~ velocity in the frenet state may be larger than body velocity if the
     // ~ vehicle is in a highly curvy road (ref to the state transformer) which
     // ~ cannot be directly fed back to body velocity.
+    //这里说了，不能使用frenet坐标系下的速度用于idm模型，
+    //因为在大曲率的道路上在frenet坐标系下的速度要大于自车实际速度，不利于回环
     return control::ContextIntelligentVelocityControl::CalculateDesiredVelocity(
         param.idm_param, ctx_param, current_pos, leading_pos, target_pos,
         current_vel, leading_vel_fin, target_vel, dt, velocity);

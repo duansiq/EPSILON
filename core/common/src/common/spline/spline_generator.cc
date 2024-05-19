@@ -29,6 +29,7 @@ ErrorType SplineGenerator<N_DEG, N_DIM>::GetCubicSplineBySampleInterpolation(
   // from the local minimum issue. To avoid the local minimum in practice
   // it is recommended to have a relatively dense parameterization
   // e.g, delta para < 3.5 * 2 = 7.0 m
+  //这里做了类似于采样密集化的操作，避免工程中会有局部最小值的影响
   const decimal_t para_delta_threshold = 7.0;
   int num_samples = static_cast<int>(samples.size());
   vec_Vecf<N_DIM> interpolated_samples{samples[0]};
@@ -70,6 +71,7 @@ ErrorType SplineGenerator<N_DEG, N_DIM>::GetCubicSplineBySampleInterpolation(
 
     for (int n = 0; n < cubic_fitting.num_pts() - 1; n++) {
       Vecf<N_DEG + 1> coeff = Vecf<N_DEG + 1>::Zero();
+      //d是多项式曲线的次数，这里用到了三次多项式
       for (int d = 0; d <= N_DEG; d++) {
         if (d <= 3) {
           coeff[N_DEG - d] = cubic_fitting.get_coeff(n, d) * fac(d);
