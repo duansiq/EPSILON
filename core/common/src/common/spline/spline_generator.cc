@@ -8,6 +8,7 @@ template <int N_DEG, int N_DIM>
 ErrorType SplineGenerator<N_DEG, N_DIM>::GetCubicSplineBySampleInterpolation(
     const vec_Vecf<N_DIM>& samples, const std::vector<decimal_t>& para,
     SplineType* spline) {
+    //自然样条插值是一种常用的插值方法，它通过对给定的样本点进行三次多项式插值来逼近原始数据，从而实现平滑曲线的拟合
   if (samples.size() < 3) {
     // printf("[SampleInterpolation]input sample size: %d.\n",
     //        static_cast<int>(samples.size()));

@@ -2,6 +2,7 @@
 
 namespace common {
 
+  //坐标系转化相关算子
 ErrorType StateTransformer::GetStateFromFrenetState(const FrenetState& fs,
                                                     State* s) const {
   if (!lane_.IsValid()) {

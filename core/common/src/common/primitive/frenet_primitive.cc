@@ -2,6 +2,7 @@
 
 namespace common {
 
+//规划出的轨迹用五次多项式兜底？
 ErrorType FrenetPrimitive::Connect(const FrenetState& fs0,
                                    const FrenetState& fs1,
                                    const decimal_t stamp, const decimal_t T,

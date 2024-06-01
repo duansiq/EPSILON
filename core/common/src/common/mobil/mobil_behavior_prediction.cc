@@ -84,7 +84,12 @@ ErrorType MobilBehaviorPrediction::LateralBehaviorPrediction(
     res->is_valid = true;
     return kSuccess;
   }
-
+  // |      |      |     |
+  // |  lcl |   lk |  lcr|
+  // |      |      |     |
+  // |   1  |   0  |  2  |
+  // |      |      |     |
+  // |      |  ego |     |
   // ~ For current lane
   common::Lane lk_lane = lanes[0];
   if (lk_lane.IsValid()) {
@@ -93,6 +98,8 @@ ErrorType MobilBehaviorPrediction::LateralBehaviorPrediction(
     common::Vehicle following_vehicle = following_vehicles[0];
     common::FrenetState following_fs = follow_frenet_states[0];
 
+    //坐标系转换方法：lk_lane是目标参考线，
+    //GetFrenetStateFromState获得当前车辆坐标计算sl坐标系存到ego_frenet_state
     common::StateTransformer stf(lk_lane);
     common::FrenetState ego_frenet_state;
     stf.GetFrenetStateFromState(vehicle.state(), &ego_frenet_state);

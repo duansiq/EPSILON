@@ -72,6 +72,7 @@ ErrorType IntelligentDriverModel::GetAccDesiredAcceleration(
 
   // ~ Here we simply use a constant dec, ego comfortable dec, as the acc of
   // ~ leading vehicle.
+  //这里引用了IIDM模型和CAH模型
   decimal_t ds = std::max(0.0, cur_state.s_front - cur_state.s);
   decimal_t acc_cah =
       (cur_state.v * cur_state.v * -param.kComfortableBrakingDeceleration) /

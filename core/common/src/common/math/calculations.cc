@@ -1,5 +1,5 @@
 #include "common/math/calculations.h"
-
+//算子库
 long long fac(int n) {
   if (n == 0) return 1;
   if (n == 1) return 1;
@@ -15,20 +15,21 @@ long long fac(int n) {
 
 long long nchoosek(int n, int k) { return fac(n) / fac(k) / fac(n - k); }
 
+//角度归一化
 decimal_t normalize_angle(const decimal_t& theta) {
   decimal_t theta_tmp = theta;
   theta_tmp -= (theta >= kPi) * 2 * kPi;
   theta_tmp += (theta < -kPi) * 2 * kPi;
   return theta_tmp;
 }
-
+//投影
 Vecf<2> rotate_vector_2d(const Vecf<2>& v, const decimal_t angle) {
   return Vecf<2>(v[0] * cos(angle) - v[1] * sin(angle),
                  v[0] * sin(angle) + v[1] * cos(angle));
 }
-
+//向量夹角
 decimal_t vec2d_to_angle(const Vecf<2>& v) { return atan2(v[1], v[0]); }
-
+//约束值最大最小
 decimal_t truncate(const decimal_t& val_in, const decimal_t& lower,
                    const decimal_t& upper) {
   if (lower > upper) {
@@ -40,7 +41,7 @@ decimal_t truncate(const decimal_t& val_in, const decimal_t& lower,
   res = std::min(res, upper);
   return res;
 }
-
+//范围内归一化映射
 decimal_t normalize_with_bound(const decimal_t& val_in, const decimal_t& lower,
                                const decimal_t& upper,
                                const decimal_t& new_lower,

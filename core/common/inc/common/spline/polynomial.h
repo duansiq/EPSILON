@@ -58,6 +58,7 @@ class Polynomial {
    * @brief Return position of polynomial with respect to parameterization
    * @param s value of polynomial parameterization
    */
+  //求解多项式在s点处的值
   inline decimal_t evaluate(const decimal_t& s, const int& d) const {
     // Use horner's rule for quick evaluation
     decimal_t p = coeff_(0) / fac(N_DEG - d);
@@ -87,13 +88,14 @@ class Polynomial {
 
   inline decimal_t J(decimal_t s, int d) const {
     if (d == 3) {
-      // integration of squared jerk
+      // integration of squared jerk jerk平方积分？
       return coeff_(0) * coeff_(0) / 20.0 * pow(s, 5) +
              coeff_(0) * coeff_(1) / 4 * pow(s, 4) +
              (coeff_(1) * coeff_(1) + coeff_(0) * coeff_(2)) / 3 * pow(s, 3) +
              coeff_(1) * coeff_(2) * s * s + coeff_(2) * coeff_(2) * s;
     } else if (d == 2) {
-      // integration of squared accleration
+      // integration of squared accleration acc平方积分？
+      //平方的积分是在计算cost function的时候用到了，里面用了横向和纵向对t进行积分作为惩罚项（ssc planner中公式3）
       return coeff_(0) * coeff_(0) / 252 * pow(s, 7) +
              coeff_(0) * coeff_(1) / 36 * pow(s, 6) +
              (coeff_(1) * coeff_(1) / 20 + coeff_(0) * coeff_(2) / 15) *
@@ -143,7 +145,7 @@ class Polynomial {
     if (!LookUpCache(S, &A_inverse)) {
       A_inverse = GetAInverse(S);
     }
-
+    //求多项式系数a_0->a_5
     auto coeff = A_inverse * b;
     coeff_[N_DEG - 5] = coeff(0) * fac(5);
     coeff_[N_DEG - 4] = coeff(1) * fac(4);

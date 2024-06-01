@@ -21,7 +21,7 @@ ErrorType MobilLaneChangingModel::GetMobilAccChangesOnCurrentLane(
   idm_param_o.kDesiredVelocity = following_fs.vec_s(1);
   IntelligentDriverModel::Param idm_param_c;
   idm_param_c.kDesiredVelocity = cur_fs.vec_s(1);
-
+  //当前方没有车时候，使用idm模型在前方放个虚拟车
   if ((!has_following_vehicle) || fabs(following_fs.vec_s(1)) < kEPS) {
     // ~ Without following vehicle or following vehicle is stop
     if (!has_leading_vehicle) {
@@ -34,6 +34,7 @@ ErrorType MobilLaneChangingModel::GetMobilAccChangesOnCurrentLane(
   } else {
     if (!has_leading_vehicle) {
       // ~ Without leading vehicle, use virtual vehicle
+      //后车会算两个acc一个是根据自车计算，一个是根据自车的前车计算
       GetDesiredAccelerationUsingIdm(idm_param_o, following_fs, cur_fs, false,
                                      &acc_o_tmp);
       GetDesiredAccelerationUsingIdm(idm_param_o, following_fs,

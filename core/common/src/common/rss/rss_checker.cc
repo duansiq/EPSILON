@@ -1,7 +1,7 @@
 #include "common/rss/rss_checker.h"
 
 namespace common {
-
+//Responsibility-Sensitive Safety
 ErrorType RssChecker::CalculateSafeLongitudinalDistance(
     const decimal_t ego_vel, const decimal_t other_vel,
     const LongitudinalDirection& direction, const RssConfig& config,
@@ -244,6 +244,7 @@ ErrorType RssChecker::CalculateRssSafeDistances(
     const std::vector<decimal_t>& other_vels,
     const LongitudinalDirection& lon_direct, const LateralDirection& lat_direct,
     const RssConfig& config, std::vector<decimal_t>* safe_distances) {
+  //综合横向纵向的安全距离得到总的rss安全距离
   safe_distances->clear();
   decimal_t safe_long_distance, safe_lat_distance;
   CalculateSafeLongitudinalDistance(ego_vels[0], other_vels[0], lon_direct,
@@ -258,6 +259,7 @@ ErrorType RssChecker::CalculateRssSafeDistances(
 ErrorType RssChecker::RssCheck(const FrenetState& ego_fs,
                                const FrenetState& other_fs,
                                const RssConfig& config, bool* is_safe) {
+  //考虑横纵向距离进行rss安全检测
   LongitudinalDirection lon_direct;
   LateralDirection lat_direct;
   if (ego_fs.vec_s[0] >= other_fs.vec_s[0]) {
@@ -293,6 +295,7 @@ ErrorType RssChecker::RssCheck(const Vehicle& ego_vehicle,
                                bool* is_safe, LongitudinalViolateType* lon_type,
                                decimal_t* rss_vel_low, decimal_t* rss_vel_up) {
   FrenetState ego_fs, other_fs;
+  //考虑横向安全距离与纵向速度进行rss安全检测
   // TODO(lu.zhang): construct stf is a little bit heavy
   // StateTransformer stf(ref_lane);
   if (stf.GetFrenetStateFromState(ego_vehicle.state(), &ego_fs) != kSuccess) {
