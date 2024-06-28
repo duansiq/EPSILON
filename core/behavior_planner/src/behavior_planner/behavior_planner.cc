@@ -234,6 +234,24 @@ ErrorType BehaviorPlanner::MultiBehaviorJudge(
     printf("[MPDM]fail to evaluate multiple policy trajs.\n");
     return kWrongStatus;
   }
+  // const decimal_t max_backward_len = 10.0;
+  // decimal_t forward_lane_len = std::max(ego_vehicle.state().velocity * 10.0, 50.0);
+  // common::Lane ego_reflane;
+  // if (map_itf_->GetRefLaneForStateByBehavior(
+  //         ego_vehicle.state(), p_route_planner_->navi_path(), ego_behavior,
+  //         forward_lane_len, max_backward_len, false,
+  //         &ego_reflane) != kSuccess) {
+  //         printf("[MPDM]fail to get ego reference lane.\n");
+  // }
+  // common::FrenetState fs;
+  // common::StateTransformer stf(semantic_vehicle_set.semantic_vehicles);
+  // if (stf.GetFrenetStateFromState(point.state(), &fs) == kSuccess) {
+  //     fs.print();
+  // }
+  rough_raj_ = winner_forward_traj;
+  for(const common::Vehicle &point : winner_forward_traj){
+    printf("[MPDM]rough traj: %lf, %lf\n", point.state().vec_position[0], point.state().vec_position[1]);
+    }
   // printf("[Stuck]id: %d choose behavior %d with cost: %lf.\n",
   // ego_vehicle.id(),
   //        static_cast<int>(winner_behavior), winner_score);

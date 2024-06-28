@@ -14,6 +14,7 @@
 
 #include "forward_simulator/multimodal_forward.h"
 #include "forward_simulator/onlane_forward_simulation.h"
+#include "common/state/state_transformer.h"
 namespace planning {
 
 class BehaviorPlanner : public Planner {
@@ -154,6 +155,7 @@ class BehaviorPlanner : public Planner {
   // debug
   vec_E<vec_E<common::Vehicle>> forward_trajs_;
   std::vector<LateralBehavior> forward_behaviors_;
+  vec_E<common::Vehicle> rough_raj_;
   vec_E<std::unordered_map<int, vec_E<common::Vehicle>>> surround_trajs_;
 };
 

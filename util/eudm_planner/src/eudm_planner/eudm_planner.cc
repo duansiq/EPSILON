@@ -251,12 +251,13 @@ ErrorType EudmPlanner::GetSurroundingForwardSimAgents(
 ErrorType EudmPlanner::RunEudm() {
   // * get relevant information
   common::SemanticVehicleSet surrounding_semantic_vehicles;
+  //获得关键障碍物
   if (map_itf_->GetKeySemanticVehicles(&surrounding_semantic_vehicles) !=
       kSuccess) {
     LOG(ERROR) << "[Eudm][Fatal]fail to get key semantic vehicles. Exit";
     return kWrongStatus;
   }
-
+  //保存关键障碍物信息
   ForwardSimAgentSet surrounding_fsagents;
   GetSurroundingForwardSimAgents(surrounding_semantic_vehicles,
                                  &surrounding_fsagents);
@@ -264,7 +265,7 @@ ErrorType EudmPlanner::RunEudm() {
   auto action_script = dcp_tree_ptr_->action_script();
   int n_sequence = action_script.size();
 
-  // * prepare for multi-threading
+  // * prepare for multi-threading 每个动作用一个线程
   std::vector<std::thread> thread_set(n_sequence);
   PrepareMultiThreadContainers(n_sequence);
 
@@ -278,6 +279,7 @@ ErrorType EudmPlanner::RunEudm() {
   }
   for (int i = 0; i < n_sequence; ++i) {
     thread_set[i].join();
+    //join()被用于等待所有线程执行完毕，以便继续执行主线程。
   }
 
   LOG(INFO) << "[Eudm][Process]Multi-thread forward simulation finished!";
@@ -1359,6 +1361,7 @@ ErrorType EudmPlanner::EgoAgentForwardSim(
     // * Lane keeping, only consider leading vehicle on ego lane
     common::Vehicle leading_vehicle;
     decimal_t distance_residual_ratio = 0.0;
+    //查看是否自车前有车，并检查是否碰撞
     if (map_itf_->GetLeadingVehicleOnLane(
             ego_fsagent.target_lane, ego_fsagent.vehicle.state(),
             all_sim_vehicles, ego_fsagent.lat_range, &leading_vehicle,
@@ -1426,6 +1429,7 @@ ErrorType EudmPlanner::EgoAgentForwardSim(
         // * rss check for evasive behavior
         bool is_rss_safe = true;
         common::RssChecker::LongitudinalViolateType type;
+        //rss检测，返回车辆过快or过慢,这里主要交互对象是gap后车
         decimal_t rss_vel_low, rss_vel_up;
         common::RssChecker::RssCheck(ego_fsagent.vehicle, gap_rear_vehicle,
                                      ego_fsagent.target_stf,
