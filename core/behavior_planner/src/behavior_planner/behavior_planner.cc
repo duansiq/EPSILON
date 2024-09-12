@@ -248,10 +248,22 @@ ErrorType BehaviorPlanner::MultiBehaviorJudge(
   // if (stf.GetFrenetStateFromState(point.state(), &fs) == kSuccess) {
   //     fs.print();
   // }
-  rough_raj_ = winner_forward_traj;
+  rough_taj_ = winner_forward_traj;
   for(const common::Vehicle &point : winner_forward_traj){
     printf("[MPDM]rough traj: %lf, %lf\n", point.state().vec_position[0], point.state().vec_position[1]);
-    }
+  }
+  vec_E<common::FrenetState> rough_taj_fs_vec;
+  vec_E<State> rough_taj_s_vec;
+  common::StateTransformer stf;
+  for(const common::Vehicle &point:rough_taj_){
+    rough_taj_s_vec.emplace_back(point.state());
+  }
+  // if(stf.GetFrenetStateVectorFromStates(rough_taj_s_vec, &rough_taj_fs_vec)==kSuccess){
+  //   for(const common::FrenetState &point: rough_taj_fs_vec){
+  //     point.print();
+  //   }
+  // }
+
   // printf("[Stuck]id: %d choose behavior %d with cost: %lf.\n",
   // ego_vehicle.id(),
   //        static_cast<int>(winner_behavior), winner_score);
@@ -470,7 +482,7 @@ ErrorType BehaviorPlanner::EvaluateSinglePolicyTraj(
   decimal_t cost_efficiency_ego_to_desired_vel =
       fabs(ego_vehicle_terminal.state().velocity -
            reference_desired_velocity_) /
-      10.0;
+      10.0;//时间范围是10？
   common::Vehicle leading_vehicle;
   common::Lane ego_ref_lane;
   const decimal_t max_backward_len = 10.0;

@@ -253,6 +253,18 @@ EudmPlannerMapAdapter::GetLeadingAndFollowingVehiclesFrenetStateOnLane(
   return kSuccess;
 }
 
+ErrorType EudmPlannerMapAdapter::GetEvaGapOnLane(
+    const common::Lane &ref_lane, const common::State &ref_state,
+    const common::VehicleSet &vehicle_set, const decimal_t &lat_range,
+    common::Vehicle *gap_start_vehicle, std::vector<std::pair<int,int>> &gap_set) {
+  if (!is_valid_) return kWrongStatus;
+  if (map_->GetEvaGapOnLane(
+          ref_lane, ref_state, vehicle_set, lat_range, gap_start_vehicle, gap_set) != kSuccess) {
+    return kWrongStatus;
+  }
+  return kSuccess;
+}
+
 ErrorType EudmPlannerMapAdapter::GetSurroundingVehicles(
     common::VehicleSet *surrounding_vehicle_set) {
   if (!is_valid_) return kWrongStatus;

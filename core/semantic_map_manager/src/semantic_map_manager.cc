@@ -216,6 +216,60 @@ ErrorType SemanticMapManager::MobilRuleBasedBehaviorPrediction(
   }
   return kSuccess;
 }
+ErrorType SemanticMapManager::GetEvaGapOnLane(
+  const common::Lane &ref_lane, const common::State &ref_state,
+  const common::VehicleSet &vehicle_set, const decimal_t &lat_range,
+  common::Vehicle *gap_start_vehicle, std::vector<std::pair<int,int>> &gap_set) const  {
+  common::StateTransformer stf(ref_lane);
+  common::FrenetState ref_fs;
+  if (stf.GetFrenetStateFromState(ref_state, &ref_fs) != kSuccess) {
+    // printf("[GapOnLane]Cannot get ref state frenet state.\n");
+    return kWrongStatus;
+  }
+
+  const decimal_t lane_width_tol = lat_range;
+  decimal_t max_backward_search_dist =
+      std::min(ref_fs.vec_s[0] - ref_lane.begin(), 100.0);
+
+  int following_vehicle_id = kInvalidAgentId;
+  Vecf<2> lane_pt;
+  int kGapMaxNums = 3;
+  std::vector<std::pair<int,int>> gap_set_temp(kGapMaxNums, std::pair<int, int>(-1,-1));
+  bool find_gap_vec_in_set = false;
+  
+  for (decimal_t delta_s = lane_width_tol / 1.4;
+       delta_s < max_backward_search_dist - 2.0 * lane_width_tol;
+       delta_s += lane_width_tol / 1.4) {
+    int count = 0;
+    ref_lane.GetPositionByArcLength(ref_fs.vec_s[0] - delta_s, &lane_pt);
+    for (auto &entry : vehicle_set.vehicles) {
+      if (entry.second.id() == kInvalidAgentId) continue;
+      if ((lane_pt - entry.second.state().vec_position).norm() <
+          lane_width_tol) {
+        if(count==kGapMaxNums-1){
+          gap_set_temp[kGapMaxNums-1].first=entry.first;
+          gap_set_temp[kGapMaxNums-1].second=INT_MAX;
+          find_gap_vec_in_set = true;
+          gap_set = gap_set_temp;
+          break;
+        }
+        gap_set_temp[count].second = entry.first;
+        gap_set_temp[count + 1].first = entry.first;
+        count++;
+      }
+    }
+
+    if (find_gap_vec_in_set) break;
+  }
+
+  if (find_gap_vec_in_set) {
+    auto it = vehicle_set.vehicles.find(gap_set[0].second);
+    *gap_start_vehicle = it->second;
+  } else {
+    return kWrongStatus;
+  }
+  return kSuccess;
+  }
 
 ErrorType SemanticMapManager::GetLeadingAndFollowingVehiclesFrenetStateOnLane(
     const common::Lane &ref_lane, const common::State &ref_state,

@@ -479,13 +479,31 @@ ErrorType EudmPlanner::UpdateSimSetupForLayer(
     bool has_front_vehicle = false, has_rear_vehicle = false;
     common::Vehicle front_vehicle, rear_vehicle;
     common::FrenetState front_fs, rear_fs;
-    map_itf_->GetLeadingAndFollowingVehiclesFrenetStateOnLane(
-        ego_fsagent->target_lane, state, other_vehicles, &has_front_vehicle,
-        &front_vehicle, &front_fs, &has_rear_vehicle, &rear_vehicle, &rear_fs);
+    bool use_gap = false;
+    if(use_gap){
+      std::cout<<"dsq use gap"<<std::endl;
+      double lat_range = 2.2;
+      common::Vehicle gap_start_vehicle;
+      std::vector<std::pair<int,int>> gap_set;
+      map_itf_->GetEvaGapOnLane(ego_fsagent->target_lane, state, other_vehicles, lat_range, &gap_start_vehicle, gap_set);
+      for(int i=0;i<gap_set.size();i++){
+        std::cout<<"dsq gap rear id = "<<gap_set[i].first<<" , front id = "<<gap_set[i].second;
+      }
+    }else{
+      // map_itf_->GetLeadingAndFollowingVehiclesFrenetStateOnLane(
+      //     ego_fsagent->target_lane, state, other_vehicles, &has_front_vehicle,
+      //     &front_vehicle, &front_fs, &has_rear_vehicle, &rear_vehicle, &rear_fs);
+      // ego_fsagent->target_gap_ids(0) =
+      //     has_front_vehicle ? front_vehicle.id() : -1;
+      // ego_fsagent->target_gap_ids(1) = has_rear_vehicle ? rear_vehicle.id() : -1;
+    }
+      map_itf_->GetLeadingAndFollowingVehiclesFrenetStateOnLane(
+          ego_fsagent->target_lane, state, other_vehicles, &has_front_vehicle,
+          &front_vehicle, &front_fs, &has_rear_vehicle, &rear_vehicle, &rear_fs);
+      ego_fsagent->target_gap_ids(0) =
+          has_front_vehicle ? front_vehicle.id() : -1;
+      ego_fsagent->target_gap_ids(1) = has_rear_vehicle ? rear_vehicle.id() : -1;
 
-    ego_fsagent->target_gap_ids(0) =
-        has_front_vehicle ? front_vehicle.id() : -1;
-    ego_fsagent->target_gap_ids(1) = has_rear_vehicle ? rear_vehicle.id() : -1;
 
     if (cfg_.safety().rss_for_layers_enable()) {
       // * Strict RSS check here

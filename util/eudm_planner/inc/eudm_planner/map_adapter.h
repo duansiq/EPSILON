@@ -65,6 +65,10 @@ class EudmPlannerMapAdapter : public EudmPlannerMapItf {
       common::Vehicle *leading_vehicle, common::FrenetState *leading_fs,
       bool *has_following_vehicle, common::Vehicle *following_vehicle,
       common::FrenetState *following_fs) override;
+  ErrorType GetEvaGapOnLane(
+    const common::Lane &ref_lane, const common::State &ref_state,
+    const common::VehicleSet &vehicle_set, const decimal_t &lat_range,
+    common::Vehicle *gap_start_vehicle, std::vector<std::pair<int,int>> &gap_set) override;
 
   void set_map(std::shared_ptr<IntegratedMap> map_ptr);
 
