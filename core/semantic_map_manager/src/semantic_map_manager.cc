@@ -240,12 +240,18 @@ ErrorType SemanticMapManager::GetEvaGapOnLane(
   for (decimal_t delta_s = lane_width_tol / 1.4;
        delta_s < max_backward_search_dist - 2.0 * lane_width_tol;
        delta_s += lane_width_tol / 1.4) {
+      // std::cout<<"dsq delta_s = "<<delta_s<<std::endl;
     int count = 0;
     ref_lane.GetPositionByArcLength(ref_fs.vec_s[0] - delta_s, &lane_pt);
     for (auto &entry : vehicle_set.vehicles) {
-      if (entry.second.id() == kInvalidAgentId) continue;
+      if (entry.second.id() == kInvalidAgentId) {
+        std::cout<<"entry.second.id() == kInvalidAgentId "<<std::endl;
+        continue;
+      }
+      std::cout<<"dsq 1 = "<< (lane_pt - entry.second.state().vec_position).norm()<<" , lane_width_tol = "<<lane_width_tol<<std::endl;
       if ((lane_pt - entry.second.state().vec_position).norm() <
           lane_width_tol) {
+        std::cout<<"dsq gap add "<<delta_s<<std::endl;
         if(count==kGapMaxNums-1){
           gap_set_temp[kGapMaxNums-1].first=entry.first;
           gap_set_temp[kGapMaxNums-1].second=INT_MAX;
@@ -259,7 +265,10 @@ ErrorType SemanticMapManager::GetEvaGapOnLane(
       }
     }
 
-    if (find_gap_vec_in_set) break;
+    if (find_gap_vec_in_set) {
+      gap_set=gap_set_temp;
+      break;
+    }
   }
 
   if (find_gap_vec_in_set) {

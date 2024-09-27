@@ -26,9 +26,9 @@ cost {
     cancel_operation_unit_cost: 8.0
   }
   navigation {
-    lane_change_left_unit_cost: 0.015
-    lane_change_right_unit_cost: 0.06
-    lane_change_unit_cost_vel_lb: 10.0
+    lane_change_left_unit_cost: 0.00
+    lane_change_right_unit_cost: 0.85
+    lane_change_unit_cost_vel_lb: 1.0
     lane_change_left_recommendation_reward : 1.0
     lane_change_right_recommendation_reward: 1.0
   }

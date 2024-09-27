@@ -258,8 +258,10 @@ ErrorType EudmPlannerMapAdapter::GetEvaGapOnLane(
     const common::VehicleSet &vehicle_set, const decimal_t &lat_range,
     common::Vehicle *gap_start_vehicle, std::vector<std::pair<int,int>> &gap_set) {
   if (!is_valid_) return kWrongStatus;
+    std::cout<<"dsq GetEvaGapOnLane first done!"<<std::endl;
   if (map_->GetEvaGapOnLane(
           ref_lane, ref_state, vehicle_set, lat_range, gap_start_vehicle, gap_set) != kSuccess) {
+      std::cout<<"dsq GetEvaGapOnLane second done!"<<std::endl; 
     return kWrongStatus;
   }
   return kSuccess;

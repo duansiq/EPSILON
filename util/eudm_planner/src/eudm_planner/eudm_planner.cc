@@ -479,15 +479,20 @@ ErrorType EudmPlanner::UpdateSimSetupForLayer(
     bool has_front_vehicle = false, has_rear_vehicle = false;
     common::Vehicle front_vehicle, rear_vehicle;
     common::FrenetState front_fs, rear_fs;
-    bool use_gap = false;
+    bool use_gap = true;
     if(use_gap){
-      std::cout<<"dsq use gap"<<std::endl;
+      LOG(INFO) <<"dsq use gap"<<std::endl;
+      std::cout <<"dsq use gap"<<std::endl;
       double lat_range = 2.2;
       common::Vehicle gap_start_vehicle;
       std::vector<std::pair<int,int>> gap_set;
       map_itf_->GetEvaGapOnLane(ego_fsagent->target_lane, state, other_vehicles, lat_range, &gap_start_vehicle, gap_set);
+      if(gap_set.empty()) {
+        LOG(INFO)<<"dsq gap set is empty!"<<std::endl;
+        std::cout <<"dsq gap set is empty!"<<std::endl;
+      }
       for(int i=0;i<gap_set.size();i++){
-        std::cout<<"dsq gap rear id = "<<gap_set[i].first<<" , front id = "<<gap_set[i].second;
+        LOG(INFO) <<"dsq gap rear id = "<<gap_set[i].first<<" , front id = "<<gap_set[i].second<<std::endl;
       }
     }else{
       // map_itf_->GetLeadingAndFollowingVehiclesFrenetStateOnLane(
@@ -1208,6 +1213,8 @@ ErrorType EudmPlanner::CostFunction(
           std::max(cfg_.cost().navigation().lane_change_unit_cost_vel_lb(),
                    ego_velocity) *
           cfg_.cost().user().cancel_operation_unit_cost();
+      // LOG(WARNING) << "[Eudm]dsq : is_cancel_behavior lane_change_preference = " << cost_tmp.navigation.lane_change_preference << std::endl;
+
     } else {
       cost_tmp.navigation.lane_change_preference =
           std::max(cfg_.cost().navigation().lane_change_unit_cost_vel_lb(),
@@ -1215,6 +1222,9 @@ ErrorType EudmPlanner::CostFunction(
           (seq_lat_behavior == LateralBehavior::kLaneChangeLeft
                ? cfg_.cost().navigation().lane_change_left_unit_cost()
                : cfg_.cost().navigation().lane_change_right_unit_cost());
+      // cost_tmp.navigation.lane_change_preference = 0.0;
+      // LOG(WARNING) << "[Eudm]dsq : !!is_cancel_behavior lane_change_preference = " << cost_tmp.navigation.lane_change_preference << std::endl;
+          
       if (lc_info_.recommend_lc_left &&
           seq_lat_behavior == LateralBehavior::kLaneChangeLeft) {
         cost_tmp.navigation.lane_change_preference =
