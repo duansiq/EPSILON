@@ -272,10 +272,10 @@ void SscPlannerServer::Replan() {
     return;
   }
   printf(
-      "[SscPlannerServer]t %lf, desired state (x,y,v,a,theta):(%lf, %lf, %lf, "
-      "%lf, %lf).\n",
+      "[SscPlannerServer]t %lf, desired state (x,y,v,a,theta,k):(%lf, %lf, %lf, "
+      "%lf, %lf, %lf).\n",
       t, desired_state.vec_position[0], desired_state.vec_position[1],
-      desired_state.velocity, desired_state.acceleration, desired_state.angle);
+      desired_state.velocity, desired_state.acceleration, desired_state.angle,desired_state.curvature);
 
   FilterSingularityState(desired_state_hist_, &desired_state);
   desired_state_hist_.push_back(desired_state);

@@ -273,6 +273,7 @@ ErrorType EudmPlanner::RunEudm() {
   // TODO(@lu.zhang) Use thread pool?
   TicToc timer;
   for (int i = 0; i < n_sequence; ++i) {
+    //action_script[i]代表一串动作序列
     thread_set[i] =
         std::thread(&EudmPlanner::SimulateActionSequence, this, ego_vehicle_,
                     surrounding_fsagents, action_script[i], i);
@@ -437,7 +438,7 @@ ErrorType EudmPlanner::UpdateSimSetupForLayer(
       std::min(std::max(state.velocity * cfg_.sim().ref_line().len_vel_coeff(),
                         cfg_.sim().ref_line().forward_len_min()),
                cfg_.sim().ref_line().forward_len_max());
-
+  //更新当前参考线和目标参考线,还有长期规划参考线，但是没有用？？
   common::Lane lane_current;
   if (map_itf_->GetRefLaneForStateByBehavior(
           state, std::vector<int>(), LateralBehavior::kLaneKeeping,
@@ -469,6 +470,7 @@ ErrorType EudmPlanner::UpdateSimSetupForLayer(
   ego_fsagent->longterm_stf = common::StateTransformer(lane_longterm);
 
   // * Gap finding for lane-changing behaviors
+  //要变道时更新gap,同时在变道的情况下会进行RSS检查
   if (ego_fsagent->lat_behavior != LateralBehavior::kLaneKeeping) {
     common::VehicleSet other_vehicles;
     for (const auto& pv : other_fsagent.forward_sim_agents) {
@@ -486,7 +488,6 @@ ErrorType EudmPlanner::UpdateSimSetupForLayer(
     ego_fsagent->target_gap_ids(0) =
         has_front_vehicle ? front_vehicle.id() : -1;
     ego_fsagent->target_gap_ids(1) = has_rear_vehicle ? rear_vehicle.id() : -1;
-
     if (cfg_.safety().rss_for_layers_enable()) {
       // * Strict RSS check here
       // * Disable the action that is apparently not valid
@@ -556,7 +557,8 @@ ErrorType EudmPlanner::SimulateScenario(
         sub_surround_trajs) {
   // * declare variables which will be used to track traces from multiple layers
   vec_E<common::Vehicle> ego_traj_multilayers{ego_vehicle};
-
+  //外层  int n_sub_threads = 1; 也就是说这些vector大小只是1，sub_seq_id=0
+  //接入周车轨迹对，这些都是提前已经完成的了，其实这里是不是没有博弈？在生成周车轨迹的时候并没有考虑自车的行为
   std::unordered_map<int, vec_E<common::Vehicle>> surround_trajs_multilayers;
   for (const auto& p_fsa : surrounding_fsagents.forward_sim_agents) {
     surround_trajs_multilayers.insert(std::pair<int, vec_E<common::Vehicle>>(
@@ -589,6 +591,8 @@ ErrorType EudmPlanner::SimulateScenario(
     // every step. A low-level reactive lane-changing controller can be
     // implemented without a lot of computation cost.
     // * update setup for this layer
+    //针对每一层的动作更一波环境（车道线，stf，期望速度等）在变道的情况下会选gap，还要进行RSS，把明显不行的动作全剪掉
+    //这里面说到对于每一层的动作，其环境信息在该步中不再改变，这样减少计算的复杂度
     if (kSuccess != UpdateSimSetupForLayer(action_this_layer,
                                            surrounding_fsagents_this_layer,
                                            &ego_fsagent_this_layer)) {
@@ -610,6 +614,7 @@ ErrorType EudmPlanner::SimulateScenario(
     // * simulate this action (layer)
     vec_E<common::Vehicle> ego_traj_multisteps;
     std::unordered_map<int, vec_E<common::Vehicle>> surround_trajs_multisteps;
+    //更完环境仿真一波，出周车轨迹和自车轨迹
     if (SimulateSingleAction(action_this_layer, ego_fsagent_this_layer,
                              surrounding_fsagents_this_layer,
                              &ego_traj_multisteps,

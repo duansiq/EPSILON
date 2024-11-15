@@ -299,7 +299,7 @@ class OnLaneForwardSimulation {
       decimal_t eqv_vehicle_len;
       GetIdmEquivalentVehicleLength(stf_current, ego_vehicle,
                                     current_leading_vehicle, current_leading_fs,
-                                    &eqv_vehicle_len);
+                                    &);
       sim_param.idm_param.kVehicleLength = eqv_vehicle_len;
 
       CalcualateVelocityUsingCtxIdm(

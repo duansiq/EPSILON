@@ -125,6 +125,7 @@ class DcpTree {
 
  private:
   ErrorType GenerateActionScript();
+  ErrorType GenerateActionScriptBySpeed();
 
   std::vector<DcpAction> AppendActionSequence(
       const std::vector<DcpAction>& seq_in, const DcpAction& a,

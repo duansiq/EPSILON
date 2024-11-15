@@ -733,11 +733,14 @@ class VisualizationUtil {
   static ErrorType GetRosMarkerMeshUsingOrientedBoundingBox2D(
       const OrientedBoundingBox2D& obb, const ColorARGB& color,
       visualization_msgs::Marker* p_marker) {
-    p_marker->type = visualization_msgs::Marker::MESH_RESOURCE;
+    // p_marker->type = visualization_msgs::Marker::MESH_RESOURCE;
+    // p_marker->action = visualization_msgs::Marker::MODIFY;
+    // p_marker->mesh_resource = "package://common/materials/bmw_x5.dae";
+    p_marker->type = visualization_msgs::Marker::CUBE;
     p_marker->action = visualization_msgs::Marker::MODIFY;
-    p_marker->mesh_resource = "package://common/materials/bmw_x5.dae";
     p_marker->mesh_use_embedded_materials = true;
-    FillScaleInMarker(Vec3f(1.0, 1.0, 1.0), p_marker);
+    Vec3f scale(obb.length, obb.width, 1.7);
+    FillScaleInMarker(scale, p_marker);
     FillColorInMarker(color, p_marker);
     geometry_msgs::Pose obb_pose;
     GetRosPoseFrom3DofState(Vec3f(obb.x, obb.y, obb.angle), &obb_pose);
@@ -769,7 +772,7 @@ class VisualizationUtil {
     p_marker->id = id;
     p_marker->type = visualization_msgs::Marker::MESH_RESOURCE;
     p_marker->action = visualization_msgs::Marker::MODIFY;
-    p_marker->mesh_resource = "package://common/materials/traffic_cone.dae";
+    p_marker->mesh_resource = "package://home/duansiqi/dsq_work/src/EPSILON/core/common/materials/traffic_cone.dae";
     // p_marker->mesh_use_embedded_materials = true;
     FillScaleInMarker(Vec3f(2, 2, 2), p_marker);
     FillColorInMarker(color, p_marker);

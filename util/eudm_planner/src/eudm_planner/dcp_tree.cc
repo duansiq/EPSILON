@@ -16,6 +16,7 @@ DcpTree::DcpTree(const int& tree_height, const decimal_t& layer_time)
     : tree_height_(tree_height), layer_time_(layer_time) {
   last_layer_time_ = layer_time_;
   GenerateActionScript();
+  // GenerateActionScriptBySpeed();
 }
 
 DcpTree::DcpTree(const int& tree_height, const decimal_t& layer_time,
@@ -23,9 +24,11 @@ DcpTree::DcpTree(const int& tree_height, const decimal_t& layer_time,
     : tree_height_(tree_height),
       layer_time_(layer_time),
       last_layer_time_(last_layer_time) {
+  // GenerateActionScriptBySpeed();
   GenerateActionScript();
 }
 
+// ErrorType DcpTree::UpdateScript() { return GenerateActionScriptBySpeed(); }
 ErrorType DcpTree::UpdateScript() { return GenerateActionScript(); }
 
 std::vector<DcpTree::DcpAction> DcpTree::AppendActionSequence(
@@ -59,6 +62,38 @@ ErrorType DcpTree::GenerateActionScript() {
       }
       ongoing_action_seq.push_back(
           DcpAction(DcpLonAction(lon), ongoing_action_.lat, layer_time_));
+    }
+    action_script_.push_back(ongoing_action_seq);
+  }
+  // override the last layer time
+  for (auto& action_seq : action_script_) {
+    action_seq.back().t = last_layer_time_;
+  }
+  return kSuccess;
+}
+
+ErrorType DcpTree::GenerateActionScriptBySpeed() {
+  action_script_.clear();
+  std::vector<DcpAction> ongoing_action_seq;
+  for (int lat = 0;  lat< static_cast<int>(DcpLatAction::MAX_COUNT); lat++) {
+    ongoing_action_seq.clear();
+    // ongoing_action_seq.push_back(
+    //     DcpAction(DcpLonAction(lon), ongoing_action_.lat, ongoing_action_.t));
+    ongoing_action_seq.push_back(
+        DcpAction(ongoing_action_.lon, DcpLatAction(lat), ongoing_action_.t));
+    for (int h = 1; h < tree_height_; ++h) {
+      for (int lon = 0; lon < static_cast<int>(DcpLonAction::MAX_COUNT);
+           lon++) {
+        if (lon != static_cast<int>(ongoing_action_.lon)) {
+          auto actions = AppendActionSequence(
+              ongoing_action_seq,
+              DcpAction(DcpLonAction(lon), DcpLatAction(lat), layer_time_),
+              tree_height_ - h);
+          action_script_.push_back(actions);
+        }
+      }
+      ongoing_action_seq.push_back(
+          DcpAction(ongoing_action_.lon, DcpLatAction(lat), layer_time_));
     }
     action_script_.push_back(ongoing_action_seq);
   }

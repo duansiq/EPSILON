@@ -248,10 +248,10 @@ ErrorType BehaviorPlanner::MultiBehaviorJudge(
   // if (stf.GetFrenetStateFromState(point.state(), &fs) == kSuccess) {
   //     fs.print();
   // }
-  rough_raj_ = winner_forward_traj;
-  for(const common::Vehicle &point : winner_forward_traj){
-    printf("[MPDM]rough traj: %lf, %lf\n", point.state().vec_position[0], point.state().vec_position[1]);
-    }
+  // rough_raj_ = winner_forward_traj;
+  // for(const common::Vehicle &point : winner_forward_traj){
+  //   printf("[MPDM]rough traj: %lf, %lf\n", point.state().vec_position[0], point.state().vec_position[1]);
+  //   }
   // printf("[Stuck]id: %d choose behavior %d with cost: %lf.\n",
   // ego_vehicle.id(),
   //        static_cast<int>(winner_behavior), winner_score);
@@ -521,6 +521,12 @@ ErrorType BehaviorPlanner::EvaluateSinglePolicyTraj(
   if (behavior != common::LateralBehavior::kLaneKeeping) {
     cost_action += 0.5;
   }
+  //1009数据强制mpdm左变道
+  // if (behavior == common::LateralBehavior::kLaneChangeLeft){
+  //   cost_action += 0.5;
+  // }else if (behavior == common::LateralBehavior::kLaneChangeRight){
+  //   cost_action += 1.0;
+  // }
   //cost分为动作，安全，效率
   *score = cost_action + cost_safety + cost_efficiency;
   printf(
